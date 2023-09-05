@@ -10,7 +10,6 @@ public class WeatherDataFetch {
 
     public interface WeatherCheckCallback {
         void onChecked(boolean isBad, String weatherStatus);
-
         void onError(String errorMessage);
     }
 

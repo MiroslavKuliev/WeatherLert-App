@@ -1,17 +1,23 @@
 package com.example.weatherlertapp;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -38,12 +44,12 @@ public class MainActivity extends AppCompatActivity {
         tvWeatherCondition = findViewById(R.id.tvWeatherCondition);
 
         setCurrentDay();
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
         } else {
             setLocationAndWeather();
         }
+        createNotificationChannel();
     }
 
     private void setCurrentDay() {
@@ -68,17 +74,21 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void fetchTemperature(double temperature){
+
+    }
+
     private void fetchWeather(double latitude, double longitude) {
         WeatherDataFetch.isWeatherBad(latitude, longitude, new WeatherDataFetch.WeatherCheckCallback() {
             @Override
             public void onChecked(boolean isBad, String weatherStatus) {
                 tvWeatherCondition.setText(weatherStatus);
                 if (isBad) {
-                    tvWeatherCondition.setTextColor(Color.RED);
-                } else {
-                    tvWeatherCondition.setTextColor(Color.BLACK);
-                }
+                tvWeatherCondition.setTextColor(Color.RED);
+            } else {
+                tvWeatherCondition.setTextColor(Color.BLACK);
             }
+        }
 
             @Override
             public void onError(String errorMessage) {
@@ -103,6 +113,39 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    @SuppressLint("MissingPermission")
+    private void showWeatherNotification(String weatherStatus) {
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        if (!notificationManager.areNotificationsEnabled()) {
+            Toast.makeText(this, "Please enable notifications for this app in settings.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "WEATHER_ALERT_CHANNEL")
+                .setSmallIcon(R.drawable.img)
+                .setContentTitle("Weather Alert!")
+                .setContentText(weatherStatus)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+        notificationManager.notify(100, builder.build());
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Weather Alert Channel";
+            String description = "Channel for Weather Alerts";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("WEATHER_ALERT_CHANNEL", name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
