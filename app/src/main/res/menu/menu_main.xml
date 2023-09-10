@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_weekly_forecast"
+        android:title="Weekly forecast"/>
+    <item
+        android:id="@+id/action_map"
+        android:title="Map"/>
+    <item
+        android:id="@+id/action_settings"
+        android:title="Settings"/>
+</menu>

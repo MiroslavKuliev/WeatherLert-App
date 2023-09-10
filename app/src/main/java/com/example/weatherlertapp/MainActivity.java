@@ -11,6 +11,11 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +47,15 @@ public class MainActivity extends AppCompatActivity {
         tvCurrentDay = findViewById(R.id.tvCurrentDay);
         tvLocation = findViewById(R.id.tvLocation);
         tvWeatherCondition = findViewById(R.id.tvWeatherCondition);
+        ImageView menuIcon = findViewById(R.id.menuIcon);
+
+        menuIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                showPopupMenu(v);
+            }
+        });
 
         setCurrentDay();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -50,6 +64,30 @@ public class MainActivity extends AppCompatActivity {
             setLocationAndWeather();
         }
         createNotificationChannel();
+    }
+
+    private void showPopupMenu(View v){
+        PopupMenu popup = new PopupMenu(MainActivity.this, v);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.menu_main, popup.getMenu());
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int id = item.getItemId();
+                if (id == R.id.action_weekly_forecast) {
+                    // Handle weekly forecast action
+                    return true;
+                } else if (id == R.id.action_map) {
+                    // Handle map action
+                    return true;
+                } else if (id == R.id.action_settings) {
+                    // Handle settings action
+                    return true;
+                }
+                return false;
+            }
+        });
+        popup.show();
     }
 
     private void setCurrentDay() {
@@ -84,11 +122,12 @@ public class MainActivity extends AppCompatActivity {
             public void onChecked(boolean isBad, String weatherStatus) {
                 tvWeatherCondition.setText(weatherStatus);
                 if (isBad) {
-                tvWeatherCondition.setTextColor(Color.RED);
-            } else {
-                tvWeatherCondition.setTextColor(Color.BLACK);
+                    tvWeatherCondition.setTextColor(Color.RED);
+                    showWeatherNotification("Bad Weather Alert: " + weatherStatus);
+                } else {
+                    tvWeatherCondition.setTextColor(Color.BLACK);
+                }
             }
-        }
 
             @Override
             public void onError(String errorMessage) {
