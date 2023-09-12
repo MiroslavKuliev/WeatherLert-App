@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">WeatherLertApp</string>
+    <string name="temperature">Temperature</string>
     <string name="weatherlert_title">WeatherLert</string>
     <string name="weather_alert_title">Weather Alert</string>
     <string name="bad_weather_alert_msg">Bad weather conditions detected in your area!</string>
@@ -10,4 +11,6 @@
     <string name="current_day">Your current day text here</string>
     <string name="weather_condition">Your weather condition text here</string>
     <string name="location">Your location text here</string>
+    <string name="title_activity_settings">Settings</string>
+
 </resources>

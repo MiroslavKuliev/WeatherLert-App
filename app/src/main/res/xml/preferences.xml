@@ -1,0 +1,10 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        app:key="temperature_unit"
+        app:title="Temperature Unit"
+        app:summaryOff="Celsius"
+        app:summaryOn="Fahrenheit"
+        app:defaultValue="false" />
+
+</PreferenceScreen>

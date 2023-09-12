@@ -9,45 +9,41 @@ public class WeatherDataFetch {
     private static final String API_KEY = "e46312fa90c63380d4fa7ba2e50f7c2a";
 
     public interface WeatherCheckCallback {
-        void onChecked(boolean isBad, String weatherStatus);
+        void onChecked(boolean isBad, String weatherStatus, double temperatureCelsius);
         void onError(String errorMessage);
     }
 
-    public static void isWeatherBad( double latitude, double longitude, WeatherCheckCallback callback) {
-        // Mocking bad weather
-        callback.onChecked(true, "Mocked stormy weather");
+    public static void isWeatherBad(double latitude, double longitude, WeatherCheckCallback callback) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
-    /*
-    Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build();
+        ApiService apiService = retrofit.create(ApiService.class);
 
-    ApiService apiService = retrofit.create(ApiService.class);
+        apiService.getCurrentWeatherData(latitude, longitude, API_KEY).enqueue(new retrofit2.Callback<WeatherResponse>() {
+            @Override
+            public void onResponse(retrofit2.Call<WeatherResponse> call, retrofit2.Response<WeatherResponse> response) {
+                if (response.body() != null && response.body().weather != null && !response.body().weather.isEmpty()) {
+                    String weatherDescription = response.body().weather.get(0).description;
+                    double temperatureKelvin = response.body().main.temp;
+                    double temperatureCelsius = temperatureKelvin - 273.15;
+                    double temperatureFarenh = 1.8 * temperatureCelsius + 32;
 
-    apiService.getCurrentWeatherData(latitude, longitude, API_KEY).enqueue(new retrofit2.Callback<WeatherResponse>() {
-        @Override
-        public void onResponse(retrofit2.Call<WeatherResponse> call, retrofit2.Response<WeatherResponse> response) {
-            if (response.body() != null && response.body().weather != null && !response.body().weather.isEmpty()) {
-                String weatherDescription = response.body().weather.get(0).description;
-
-                if (weatherDescription.contains("rain") || weatherDescription.contains("storm")) {
-                    callback.onChecked(true, weatherDescription);
+                    callback.onChecked(weatherDescription.contains("rain") || weatherDescription.contains("storm"), weatherDescription, temperatureCelsius);
                 } else {
-                    callback.onChecked(false, weatherDescription);
+                    callback.onError("Failed to retrieve weather data.");
                 }
-            } else {
-                callback.onError("Failed to retrieve weather data.");
             }
-        }
 
-        @Override
-        public void onFailure(retrofit2.Call<WeatherResponse> call, Throwable t) {
-            callback.onError(t.getMessage());
-        }
-    });
-    */
+            @Override
+            public void onFailure(retrofit2.Call<WeatherResponse> call, Throwable t) {
+                callback.onError(t.getMessage());
+            }
+        });
     }
+
+
 }
 
 

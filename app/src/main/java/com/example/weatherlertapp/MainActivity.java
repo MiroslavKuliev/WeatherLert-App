@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
@@ -11,6 +12,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,12 +34,19 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import android.view.Menu;
+import android.view.MenuItem;
+import android.content.Intent;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int LOCATION_PERMISSION_REQUEST = 100;
 
-    private TextView tvCurrentDay, tvLocation, tvWeatherCondition;
+    private TextView tvCurrentDay, tvLocation, tvWeatherCondition, tvTemperature;
+
     private FusedLocationProviderClient fusedLocationClient;
+
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +56,10 @@ public class MainActivity extends AppCompatActivity {
         tvCurrentDay = findViewById(R.id.tvCurrentDay);
         tvLocation = findViewById(R.id.tvLocation);
         tvWeatherCondition = findViewById(R.id.tvWeatherCondition);
+        tvTemperature = findViewById(R.id.tvTemperature);
         ImageView menuIcon = findViewById(R.id.menuIcon);
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         menuIcon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         createNotificationChannel();
     }
 
-    private void showPopupMenu(View v){
+    private void showPopupMenu(View v) {
         PopupMenu popup = new PopupMenu(MainActivity.this, v);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.menu_main, popup.getMenu());
@@ -75,13 +87,12 @@ public class MainActivity extends AppCompatActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 int id = item.getItemId();
                 if (id == R.id.action_weekly_forecast) {
-                    // Handle weekly forecast action
                     return true;
                 } else if (id == R.id.action_map) {
-                    // Handle map action
                     return true;
                 } else if (id == R.id.action_settings) {
-                    // Handle settings action
+                    Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                    startActivity(intent);
                     return true;
                 }
                 return false;
@@ -89,6 +100,27 @@ public class MainActivity extends AppCompatActivity {
         });
         popup.show();
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
 
     private void setCurrentDay() {
         Calendar calendar = Calendar.getInstance();
@@ -111,16 +143,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-    private void fetchTemperature(double temperature){
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setLocationAndWeather();
     }
-
     private void fetchWeather(double latitude, double longitude) {
         WeatherDataFetch.isWeatherBad(latitude, longitude, new WeatherDataFetch.WeatherCheckCallback() {
+
             @Override
-            public void onChecked(boolean isBad, String weatherStatus) {
+            public void onChecked(boolean isBad, String weatherStatus, double temperature) {
+                boolean isFahrenheit = sharedPreferences.getBoolean("temperature_unit", false);
+
+                if (isFahrenheit) {
+                    temperature = (temperature * 9/5) + 32;
+                    tvTemperature.setText(String.format(Locale.getDefault(), "%.1f°F", temperature));
+                } else {
+                    tvTemperature.setText(String.format(Locale.getDefault(), "%.1f°C", temperature));
+                }
+
                 tvWeatherCondition.setText(weatherStatus);
+
                 if (isBad) {
                     tvWeatherCondition.setTextColor(Color.RED);
                     showWeatherNotification("Bad Weather Alert: " + weatherStatus);
@@ -135,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
 
     private void fetchAddressFromLocation(Location location) {
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
