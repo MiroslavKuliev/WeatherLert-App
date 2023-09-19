@@ -21,6 +21,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -46,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
 
     private FusedLocationProviderClient fusedLocationClient;
 
+    private ImageView weatherImageView;
+
     private SharedPreferences sharedPreferences;
 
     @Override
@@ -58,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         tvWeatherCondition = findViewById(R.id.tvWeatherCondition);
         tvTemperature = findViewById(R.id.tvTemperature);
         ImageView menuIcon = findViewById(R.id.menuIcon);
+        weatherImageView = findViewById(R.id.weatherImage);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -76,6 +80,30 @@ public class MainActivity extends AppCompatActivity {
             setLocationAndWeather();
         }
         createNotificationChannel();
+    }
+
+    private void setWeatherIcon(String weatherStatus) {
+        int iconResource = R.drawable.img;
+
+        switch (weatherStatus.toLowerCase()) {
+            case "sunny":
+                iconResource = R.drawable.sunny_cloud;
+                break;
+            case "rainy":
+                iconResource = R.drawable.sunny_cloud_rain;
+                break;
+            case "cloudy":
+                iconResource = R.drawable.cloudy;
+                break;
+            case "stormy":
+                iconResource = R.drawable.stormy;
+                break;
+            case "foggy":
+                iconResource = R.drawable.foggy;
+                break;
+        }
+
+        weatherImageView.setImageResource(iconResource);
     }
 
     private void showPopupMenu(View v) {
@@ -107,6 +135,8 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -149,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         setLocationAndWeather();
     }
     private void fetchWeather(double latitude, double longitude) {
-        WeatherDataFetch.isWeatherBad(latitude, longitude, new WeatherDataFetch.WeatherCheckCallback() {
+        /* WeatherDataFetch.isWeatherBad(latitude, longitude, new WeatherDataFetch.WeatherCheckCallback() {
 
             @Override
             public void onChecked(boolean isBad, String weatherStatus, double temperature) {
@@ -164,6 +194,8 @@ public class MainActivity extends AppCompatActivity {
 
                 tvWeatherCondition.setText(weatherStatus);
 
+                setWeatherIcon(weatherStatus);
+
                 if (isBad) {
                     tvWeatherCondition.setTextColor(Color.RED);
                     showWeatherNotification("Bad Weather Alert: " + weatherStatus);
@@ -176,9 +208,30 @@ public class MainActivity extends AppCompatActivity {
             public void onError(String errorMessage) {
                 Toast.makeText(MainActivity.this, "Error: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
-        });
-    }
+        }); */
+        boolean isBad = true;
+        String weatherStatus = "Stormy";
+        double temperature = 25.0;
 
+        boolean isFahrenheit = sharedPreferences.getBoolean("temperature_unit", false);
+        if (isFahrenheit) {
+            temperature = (temperature * 9/5) + 32;
+            tvTemperature.setText(String.format(Locale.getDefault(), "%.1f°F", temperature));
+        } else {
+            tvTemperature.setText(String.format(Locale.getDefault(), "%.1f°C", temperature));
+        }
+
+        tvWeatherCondition.setText(weatherStatus);
+        setWeatherIcon(weatherStatus);
+
+        tvWeatherCondition.setText(weatherStatus);
+        if (isBad) {
+            tvWeatherCondition.setTextColor(Color.RED);
+            showWeatherNotification("Bad Weather Alert: " + weatherStatus);
+        } else {
+            tvWeatherCondition.setTextColor(Color.BLACK);
+        }
+    }
 
     private void fetchAddressFromLocation(Location location) {
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
@@ -207,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "WEATHER_ALERT_CHANNEL")
-                .setSmallIcon(R.drawable.img)
+                .setSmallIcon(R.drawable.stormy)
                 .setContentTitle("Weather Alert!")
                 .setContentText(weatherStatus)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
@@ -219,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Weather Alert Channel";
             String description = "Channel for Weather Alerts";
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel("WEATHER_ALERT_CHANNEL", name, importance);
             channel.setDescription(description);
 

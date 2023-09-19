@@ -28,7 +28,7 @@ public class WeatherDataFetch {
                     String weatherDescription = response.body().weather.get(0).description;
                     double temperatureKelvin = response.body().main.temp;
                     double temperatureCelsius = temperatureKelvin - 273.15;
-                    double temperatureFarenh = 1.8 * temperatureCelsius + 32;
+                    double temperatureFarenheit = 1.8 * temperatureCelsius + 32;
 
                     callback.onChecked(weatherDescription.contains("rain") || weatherDescription.contains("storm"), weatherDescription, temperatureCelsius);
                 } else {
