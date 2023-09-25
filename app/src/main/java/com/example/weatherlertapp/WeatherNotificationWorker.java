@@ -1,15 +1,14 @@
-package workers;
+package com.example.weatherlertapp;
 
-/*import android.content.Context;
+import android.content.Context;
+import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
-
-import com.example.weatherlertapp.R;
-import com.example.weatherlertapp.WeatherDataFetch;
 
 public class WeatherNotificationWorker extends Worker {
 
@@ -50,16 +49,15 @@ public class WeatherNotificationWorker extends Worker {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
 
         if (!notificationManager.areNotificationsEnabled()) {
-
             return;
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "WEATHER_ALERT_CHANNEL")
                 .setSmallIcon(R.drawable.img)
-                .setContentTitle("Weather Alert!")
+                .setContentTitle("Weather Alert!!!")
                 .setContentText(weatherStatus)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
 
         notificationManager.notify(100, builder.build());
     }
-}*/
+}

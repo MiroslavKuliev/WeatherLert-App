@@ -22,6 +22,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import java.util.concurrent.TimeUnit;
+
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -80,6 +85,16 @@ public class MainActivity extends AppCompatActivity {
             setLocationAndWeather();
         }
         createNotificationChannel();
+
+        PeriodicWorkRequest weatherWorkRequest = new PeriodicWorkRequest.Builder(
+                WeatherNotificationWorker.class,
+                1,
+                TimeUnit.MINUTES)
+                .build();
+
+        WorkManager.getInstance(this)
+                .enqueue(weatherWorkRequest);
+
     }
 
     private void setWeatherIcon(String weatherStatus) {
@@ -280,8 +295,6 @@ public class MainActivity extends AppCompatActivity {
             notificationManager.createNotificationChannel(channel);
         }
     }
-
-    
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
